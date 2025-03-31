@@ -32,7 +32,7 @@ class Hanzi:
 @dataclasses.dataclass
 class Info:
     hanzi: "Hanzi"
-    example:Optional[str]
+    example:Optional[list[tuple[str, str]]]
     ai_explanation: Optional[str]
 
 
