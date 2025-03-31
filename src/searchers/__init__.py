@@ -1,0 +1,1 @@
+from .cccedict.cedict import Cedict
