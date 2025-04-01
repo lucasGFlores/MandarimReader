@@ -2,10 +2,19 @@ import logging
 import os
 import pickle
 import re
+import time
 from pathlib import Path
 from threading import Lock
+from typing import List
 
-from src import Hanzi
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support import expected_conditions as EC
+
+from src import Hanzi, Info
 from ..binary_tree_hanzi import BinaryTreeHanzi
 from .parser import get_list
 
@@ -39,10 +48,17 @@ class CeDictionary(metaclass=SingletonMeta):
         self._tree_pool: dict[int:BinaryTreeHanzi] = {}
         self._feed_tree_pool()
 
-    def _get_tree_from_pool(self, index: int) -> BinaryTreeHanzi:
-         return self._tree_pool.setdefault(index,BinaryTreeHanzi())
+    def search_meaning(self, text:str) -> List[Info]:
+        get_hanzi_stamp = time.perf_counter()
+        hanzi_in_text = list(filter(lambda x: x,self._search_hanzi(text)))
+        list_info = []
+        get_examples_stamp = time.perf_counter()
+        for hanzi in hanzi_in_text:
+            examples = self._get_hanzi_examples(hanzi.simplified)
+            list_info.append(Info(hanzi,examples,None))
+        return list_info
 
-    def search_data(self, hanzi_text: str):
+    def _search_hanzi(self, hanzi_text: str) -> list[Hanzi]:
         #理想主义
         text_size = len(hanzi_text)
         searchers = []
@@ -57,6 +73,44 @@ class CeDictionary(metaclass=SingletonMeta):
                 searcher[0] += 1
             searchers.pop(-1)
         return result
+
+    @staticmethod
+    def _get_hanzi_examples(hanzi: str,output_language="eng"):
+        url = f"https://tatoeba.org/en/sentences/search?query={hanzi}&from=cmn&to={output_language}"
+
+        options = webdriver.ChromeOptions()
+        options.add_argument("--headless")  # Rodar sem abrir janela
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+
+        driver.get(url)
+
+        # 🕒 Aguarda até que pelo menos um elemento de frases apareça na página
+        try:
+            WebDriverWait(driver, 2).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".sentence-and-translations"))
+            )
+        except:
+            print("Nenhuma frase encontrada ou a página demorou para carregar.")
+            driver.quit()
+            return []
+
+        # Pegando as frases e traduções
+        examples = []
+        sentences = driver.find_elements(By.CSS_SELECTOR, ".sentence-and-translations")
+
+        for sentence in sentences:
+            original = sentence.find_element(By.CSS_SELECTOR, ".text").text
+            try:
+                translation = sentence.find_element(By.CSS_SELECTOR, ".translations .text").text
+            except:
+                translation = "Sem tradução encontrada"
+            examples.append((original, translation))
+
+        driver.quit()
+        return examples
+
+    def _get_tree_from_pool(self, index: int) -> BinaryTreeHanzi:
+         return self._tree_pool.setdefault(index,BinaryTreeHanzi())
 
 
     def _feed_tree_pool(self):
