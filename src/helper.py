@@ -32,12 +32,13 @@ class Hanzi:
 @dataclasses.dataclass
 class Info:
     hanzi: "Hanzi"
-    example:Optional[list[tuple[str, str]]]
+    example:Optional[list]
     ai_explanation: Optional[str]
 
 
 class Searcher(Protocol):
-    def search_meaning(self,text: str) -> List[Info]:
+    @staticmethod
+    def search_meaning(text: str) -> List[Info]:
         pass
 
 class ArtificialIntelligence:
