@@ -13,5 +13,7 @@ class MeaningSearch:
     @staticmethod
     def search_meaning(text: str) -> List[Info]:
         hanzi_list = CeDictionary().search_data(text)
-        list_info = [Info(hanzi,Tatoeba().get_examples(hanzi.simplified),None) for hanzi in hanzi_list]
-        return list_info
+        word_list = [hanzi.simplified for hanzi in hanzi_list]
+        example_list = Tatoeba.get_examples(word_list,num_examples=3)
+        info_list = [Info(hanzi=hanzi,example=example,ai_explanation=None) for hanzi, example in zip(hanzi_list,example_list)]
+        return info_list
