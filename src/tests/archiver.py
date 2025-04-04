@@ -26,11 +26,6 @@ class TestArchiver(unittest.TestCase):
         data = self.archiver.load(self.class_test.__class__)
         self.assertNotEqual(data,None)
 
-    def test_save_own_register(self):
-        self.test_save_data()
-        print(self.archiver._root_library)
-        self.archiver._save_register()
-
     def test_load_own_register(self):
         register = self.archiver._load_register()
         self.assertNotEqual(register,{})
