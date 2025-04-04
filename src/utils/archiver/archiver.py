@@ -46,7 +46,6 @@ class Archiver(metaclass=SingletonMeta):
             client_path = self._create_client_path(client_class)
             self._register_address(client_class,client_path)
         self._write_archive(data,self._get_client_path(client_class))
-        self._save_register()
 
     def load(self,client_class:type) -> any:
         if not self._check_has_register(client_class):
@@ -59,16 +58,9 @@ class Archiver(metaclass=SingletonMeta):
             raise OldSaveError(client_class)
         return data
 
-    def _save_register(self):
-        self.save(self.__class__,self._files_address)
-
     def _load_register(self) -> dict:
         if not self._list_library_files():
             return {}
-
-        if Archiver.__class__ in self._list_library_files():
-            return self._load_data(self._create_client_path(self.__class__))
-
         return {client_class : archived_path for client_class, archived_path in self._list_library_files()}
 
     def _list_library_files(self) -> list:
