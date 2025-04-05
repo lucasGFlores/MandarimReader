@@ -76,7 +76,7 @@ class Archiver(metaclass=SingletonMeta):
     def _create_client_path(self, client_class: type) -> Path:
         client_path = self._root_library.resolve().joinpath(client_class.__name__,"data.plk")
         try:
-            os.makedirs(client_path)
+            client_path.parent.mkdir(parents=True,exist_ok=True)
         except FileExistsError:
             print("The archive was create previously, maybe ocurred some error inside save method")
             return client_path
