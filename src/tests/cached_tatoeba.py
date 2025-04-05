@@ -17,8 +17,6 @@ class TestCachedTatoeba(unittest.TestCase):
         rest_words, _ = self.cached_tatoeba._get_examples_from_cache(self.word_list + ["狩猎","学习"])
         self.assertNotEqual(_, None,
                             "The system to register the cache of the examples are broken")
-        print(_)
-
         self.assertEqual(rest_words, ["狩猎","学习"],"Error to remove the hanzis outside the list")
 
         cached_examples = self.cached_tatoeba.get_examples(self.word_list + ["狩猎","学习"])
