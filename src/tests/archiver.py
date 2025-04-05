@@ -17,9 +17,16 @@ class TestArchiver(unittest.TestCase):
                 self.value = [1,2,3,4,5,6]
         self.class_test = ClientTest()
 
+    def test_create_path(self):
+        path = self.archiver._create_client_path(client_class=self.class_test.__class__)
+        self.assertEqual(path,self.archiver._root_library.resolve().joinpath(str(self.class_test.__class__.__name__),"data.plk"))
+        self.assertTrue(path.parent.resolve().exists())
     def test_save_data(self):
         self.archiver.save(self.class_test.__class__,self.class_test.value)
         self.assertNotEqual(self.archiver._files_address, None)
+        path_test = self.archiver._create_client_path(client_class=self.class_test.__class__)
+        print(path_test)
+        self.assertTrue(path_test.exists() and path_test.is_file())
 
     def test_load_data(self):
         self.test_save_data()
